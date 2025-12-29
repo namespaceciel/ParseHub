@@ -50,8 +50,8 @@ class XhsParser(BaseParser):
         elif result["作品类型"] == "图文":
             photos = []
             for i in result["下载地址"]:
-                img_url = i if i.endswith("?") else i + "?"
-                ext = (await self.get_ext_by_url(img_url)) or "png"
+                img_url = i.split("?")[0] + "?imageView2/format/png"
+                ext = "png"
                 photos.append(Image(img_url, ext))
             return ImageParseResult(
                 photo=photos,

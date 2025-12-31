@@ -103,12 +103,27 @@ class Twitter:
         for i in media:
             match i["type"]:
                 case "photo":
-                    medias.append(TwitterPhoto(url=i["media_url_https"]))
+                    url = i["media_url_https"]
+                    url = re.sub(r"\.(\w+)$", r"?format=\1&name=orig", url)
+                    medias.append(TwitterPhoto(url=url))
                 case "video":
                     original_info = i.get("original_info", {})
+                    variants = i["video_info"]["variants"]
+
+                    mp4_variants = [
+                        v for v in variants
+                        if v.get("content_type") == "video/mp4" and "bitrate" in v
+                    ]
+
+                    if mp4_variants:
+                        best_variant = sorted(mp4_variants, key=lambda x: x["bitrate"], reverse=True)[0]
+                        video_url = best_variant["url"]
+                    else:
+                        video_url = variants[-1]["url"]
+
                     medias.append(
                         TwitterVideo(
-                            url=i["video_info"]["variants"][-1]["url"],
+                            url=video_url,
                             height=original_info.get("height", 0),
                             width=original_info.get("width", 0),
                         )
